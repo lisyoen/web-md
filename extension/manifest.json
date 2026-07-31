@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Web Markdown",
+  "version": "1.0.0",
+  "description": "웹페이지 본문을 LLM 컨텍스트용 Markdown으로 다운로드합니다.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArMEfMGHwsZBuKPcVvLSalxPekC0VjdIaUpOQys9FfRrlVHKv+CFqP6uVuWd2VhS9qxfWEAAugv3ryo8rHmqV+JRa0zaUhxDR+vL73pX04J6sj6iBmJTGIdItAzn57RYvWLbIoNllAnFxnkPw3reZs2OexKgDXntjcRurqYAOR0k0YltjOQOPG1xmihuXf2Q/50WGTSHHHAXp35dD1XzdIhJevtDBHtZiERByT/jrf0k5fdmFvcd4y9DvxkucP11ulhNQD2uMk2Ho5akzpXbNgDapDoz7EsHU98kI4nPmYZDtzFJC5t8St5wBqMHrfZLqp7nPVLS4qlZ2CjkWoN5r8QIDAQAB",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_title": "Markdown으로 다운로드",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
