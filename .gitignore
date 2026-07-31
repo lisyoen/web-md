@@ -6,3 +6,4 @@ build/
 *.log
 *.pem
 .DS_Store
+updater/host-manifest.json
