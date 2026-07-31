@@ -52,6 +52,7 @@ npm run healthcheck
 ```
 
 변환 및 추출 로직은 `src/`에서 수정합니다. 빌드가 이를 `extension/lib/`에 동기화하므로 해당 산출물을 직접 편집하지 마세요. 테스트 자료는 실제 페이지 사본이 아닌 합성 HTML만 사용합니다.
+아이콘은 `assets/icon.svg`를 수정한 후 `npm run icons`로 재생성합니다.
 
 ## 제한사항
 

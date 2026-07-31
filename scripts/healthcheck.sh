@@ -16,6 +16,9 @@ required_files=(
 for file in "${required_files[@]}"; do
   test -f "$file"
 done
+for size in 16 48 128; do
+  test -f "extension/icons/icon${size}.png"
+done
 
 bash scripts/build.sh
 diff -q src/extractor.js extension/lib/extractor.js
