@@ -13,4 +13,5 @@ cp src/version.js extension/lib/version.js
 
 diff -q src/extractor.js extension/lib/extractor.js
 diff -q src/converter.js extension/lib/converter.js
+diff -q src/version.js extension/lib/version.js
 echo "Build complete: extension/lib"

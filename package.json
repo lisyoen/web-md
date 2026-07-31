@@ -1,11 +1,11 @@
 {
   "name": "web-md",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "웹페이지 본문을 LLM 컨텍스트용 Markdown 으로 추출하는 Chrome 확장",
   "main": "src/converter.js",
   "scripts": {
     "build": "bash scripts/build.sh",
-    "test": "node tests/extractor.test.js && node tests/converter.test.js && node tests/version.test.js",
+    "test": "node tests/extractor.test.js && node tests/converter.test.js && node tests/version.test.js && node tests/updater.test.js",
     "publish": "bash scripts/publish.sh",
     "healthcheck": "bash scripts/healthcheck.sh"
   },
