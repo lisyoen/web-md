@@ -192,6 +192,171 @@
     });
   }
 
+  function normalizedLabelText(node) {
+    return (node && node.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function labelFor(control, root, document) {
+    var label = null;
+    var id = control.getAttribute('id');
+    if (id) {
+      label = Array.from(root.querySelectorAll('label[for]')).find(function (candidate) {
+        return candidate.getAttribute('for') === id;
+      }) || null;
+    }
+    if (!label) label = control.closest('label');
+    var text = '';
+    if (label) {
+      var labelCopy = label.cloneNode(true);
+      labelCopy.querySelectorAll('input, textarea, select').forEach(function (node) { node.remove(); });
+      text = normalizedLabelText(labelCopy);
+    }
+    if (!text) text = control.getAttribute('aria-label') || '';
+    if (!text) {
+      var labelledBy = (control.getAttribute('aria-labelledby') || '').trim().split(/\s+/).filter(Boolean);
+      text = labelledBy.map(function (labelId) {
+        return normalizedLabelText(document.getElementById(labelId));
+      }).filter(Boolean).join(' ');
+    }
+    if (!text) text = control.getAttribute('placeholder') || control.getAttribute('title') ||
+      control.getAttribute('name') || '입력';
+    return { text: String(text).replace(/\s+/g, ' ').trim(), element: label };
+  }
+
+  function appendLabeledValue(target, label, value, document) {
+    var strong = document.createElement('strong');
+    strong.textContent = label;
+    target.appendChild(strong);
+    target.appendChild(document.createTextNode(': ' + value));
+  }
+
+  function formOutputElement(control, document) {
+    return document.createElement(control.closest('td, th') ? 'span' : 'p');
+  }
+
+  function replaceControl(control, replacement, label) {
+    if (label && label.contains(control)) label.replaceWith(replacement);
+    else {
+      control.replaceWith(replacement);
+      if (label && label.parentNode) label.remove();
+    }
+  }
+
+  function setLiteralOutput(element, text) {
+    element.setAttribute('data-web-md-form-output', text);
+    element.textContent = text;
+  }
+
+  function normalizeForms(root, document) {
+    root.querySelectorAll('fieldset > legend').forEach(function (legend) {
+      var heading = document.createElement('h3');
+      heading.textContent = normalizedLabelText(legend);
+      legend.replaceWith(heading);
+    });
+
+    root.querySelectorAll('input').forEach(function (input) {
+      if (!input.parentNode) return;
+      var type = (input.getAttribute('type') || 'text').toLowerCase();
+      if (type === 'checkbox' && input.matches('li > input[type="checkbox"]')) return;
+      var label = labelFor(input, root, document);
+      var output = formOutputElement(input, document);
+      if (['hidden', 'submit', 'button', 'reset', 'image'].includes(type)) {
+        replaceControl(input, document.createTextNode(''), label.element);
+        return;
+      }
+      if (type === 'file') {
+        var fileNames = input.getAttribute('data-web-md-files') || '';
+        if (fileNames) appendLabeledValue(output, label.text, fileNames, document);
+        replaceControl(input, fileNames ? output : document.createTextNode(''), label.element);
+        return;
+      }
+      if (type === 'checkbox' || type === 'radio') {
+        var checked = input.hasAttribute('checked');
+        setLiteralOutput(output, type === 'checkbox'
+          ? (checked ? '[x] ' : '[ ] ') + label.text
+          : (checked ? '(●) ' : '(○) ') + label.text);
+      } else {
+        var value = input.getAttribute('value') || '';
+        if (type === 'password') value = value ? '(입력됨)' : '(빈칸)';
+        else if (!value) value = '(빈칸)';
+        appendLabeledValue(output, label.text, value, document);
+      }
+      replaceControl(input, output, label.element);
+    });
+
+    root.querySelectorAll('select').forEach(function (select) {
+      if (!select.parentNode) return;
+      var label = labelFor(select, root, document);
+      var output = formOutputElement(select, document);
+      var inTable = Boolean(select.closest('td, th'));
+      var options = Array.from(select.querySelectorAll('option'));
+      var selected = options.filter(function (option) { return option.hasAttribute('selected'); });
+      appendLabeledValue(output, label.text,
+        selected.length ? selected.map(normalizedLabelText).join(', ') : '(빈칸)', document);
+      if (options.length) {
+        if (!inTable) output.appendChild(document.createElement('br'));
+        output.appendChild(document.createTextNode(inTable ? ' / 선택지: ' : '선택지: '));
+        options.forEach(function (option, index) {
+          if (index) output.appendChild(document.createTextNode(' / '));
+          if (option.hasAttribute('selected')) {
+            var strong = document.createElement('strong');
+            strong.textContent = normalizedLabelText(option);
+            output.appendChild(strong);
+          } else output.appendChild(document.createTextNode(normalizedLabelText(option)));
+        });
+      }
+      replaceControl(select, output, label.element);
+    });
+
+    root.querySelectorAll('textarea').forEach(function (textarea) {
+      if (!textarea.parentNode) return;
+      var label = labelFor(textarea, root, document);
+      var value = textarea.textContent || '';
+      if (textarea.closest('td, th')) {
+        var inline = document.createElement('span');
+        appendLabeledValue(inline, label.text, value || '(빈칸)', document);
+        replaceControl(textarea, inline, label.element);
+        return;
+      }
+      var wrapper = document.createElement('div');
+      var heading = document.createElement('p');
+      appendLabeledValue(heading, label.text, '', document);
+      heading.lastChild.nodeValue = ':';
+      wrapper.appendChild(heading);
+      if (value) {
+        var pre = document.createElement('pre');
+        var code = document.createElement('code');
+        code.className = 'language-text';
+        code.textContent = value;
+        pre.appendChild(code);
+        wrapper.appendChild(pre);
+      } else {
+        var empty = document.createElement('p');
+        empty.textContent = '(빈칸)';
+        wrapper.appendChild(empty);
+      }
+      replaceControl(textarea, wrapper, label.element);
+    });
+
+    root.querySelectorAll('[role="checkbox"], [role="switch"], [role="radio"]').forEach(function (widget) {
+      var role = widget.getAttribute('role');
+      var checked = widget.getAttribute('aria-checked') === 'true';
+      var text = normalizedLabelText(widget) || widget.getAttribute('aria-label') || '입력';
+      var output = formOutputElement(widget, document);
+      setLiteralOutput(output, role === 'radio'
+        ? (checked ? '(●) ' : '(○) ') + text
+        : (checked ? '[x] ' : '[ ] ') + text);
+      widget.replaceWith(output);
+    });
+    root.querySelectorAll('[role="option"][aria-selected="true"], [role="tab"][aria-selected="true"]')
+      .forEach(function (option) {
+        var strong = document.createElement('strong');
+        strong.textContent = '선택됨';
+        option.insertBefore(document.createTextNode(' '), option.firstChild);
+        option.insertBefore(strong, option.firstChild);
+      });
+  }
+
   function preprocess(root, document, pageUrl) {
     root.querySelectorAll('.expand-content, .rwui_expandable_item_body, [class*="collapse"]').forEach(function (body) {
       body.classList.remove('expand-hidden', 'hidden');
@@ -213,6 +378,7 @@
       macro.replaceWith(blockquote);
     });
 
+    normalizeForms(root, document);
     normalizeTables(root, document);
     normalizeCodePanels(root, document);
 
@@ -281,6 +447,15 @@
       replacement: function (content, node) {
         var cleaned = content.replace(/^\s*[-*+]\s*/, '').trim();
         return '\n- [' + node.getAttribute('data-web-md-task') + '] ' + cleaned;
+      }
+    });
+    service.addRule('formOutput', {
+      filter: function (node) {
+        return node.nodeType === 1 && node.hasAttribute('data-web-md-form-output');
+      },
+      replacement: function (_content, node) {
+        var output = node.getAttribute('data-web-md-form-output');
+        return node.nodeName === 'P' ? '\n\n' + output + '\n\n' : output;
       }
     });
     service.addRule('label', {

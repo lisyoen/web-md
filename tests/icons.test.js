@@ -53,8 +53,8 @@ async function run() {
   }
   console.log('PASS manifest icon paths match existing files');
 
-  assert.strictEqual(manifest.version, '1.2.0');
-  console.log('PASS icon manifest version is 1.2.0');
+  assert.strictEqual(manifest.version, '1.3.0');
+  console.log('PASS icon manifest version is 1.3.0');
   console.log('PASS all 5 icon checks');
 }
 

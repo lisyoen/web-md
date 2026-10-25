@@ -12,7 +12,7 @@
     '.post-content', '.article-body', '.markdown-body', '.entry-content'
   ];
   var REMOVE_SELECTORS = [
-    'script', 'style', 'noscript', 'svg', 'iframe', 'form', 'button', 'nav',
+    'script', 'style', 'noscript', 'svg', 'iframe', 'button', 'nav',
     'header', 'footer', 'aside', '[role="navigation"]', '[role="banner"]',
     '[role="contentinfo"]', '[aria-hidden="true"]', '[hidden]'
   ];
@@ -44,6 +44,27 @@
 
   function cleanClone(element) {
     var clone = element.cloneNode(true);
+    var originals = element.querySelectorAll('input, textarea, select, option');
+    var clones = clone.querySelectorAll('input, textarea, select, option');
+    var count = Math.min(originals.length, clones.length);
+    for (var index = 0; index < count; index += 1) {
+      var original = originals[index];
+      var copy = clones[index];
+      if (original.tagName === 'INPUT') {
+        var type = (original.getAttribute('type') || 'text').toLowerCase();
+        if (type === 'checkbox' || type === 'radio') {
+          if (original.checked) copy.setAttribute('checked', '');
+          else copy.removeAttribute('checked');
+        } else {
+          copy.setAttribute('value', original.value);
+        }
+      } else if (original.tagName === 'TEXTAREA') {
+        copy.textContent = original.value;
+      } else if (original.tagName === 'OPTION') {
+        if (original.selected) copy.setAttribute('selected', '');
+        else copy.removeAttribute('selected');
+      }
+    }
     clone.querySelectorAll(REMOVE_SELECTORS.join(',')).forEach(function (node) {
       node.remove();
     });

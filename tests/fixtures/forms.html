@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head><title>폼 예제</title></head>
+<body>
+  <main>
+    <h1>폼 예제</h1>
+    <form>
+      <p>폼 안의 본문입니다.</p>
+      <label for="name">이름</label><input id="name" type="text">
+      <label for="memo">메모</label><textarea id="memo"></textarea>
+      <label><input id="agree" type="checkbox"> 동의</label>
+      <label><input id="news" type="checkbox"> 뉴스 수신</label>
+      <label><input id="basic" type="radio" name="plan"> 기본형</label>
+      <label><input id="pro" type="radio" name="plan"> 프로형</label>
+      <label for="city">도시</label>
+      <select id="city"><option>서울</option><option>부산</option><option>제주</option></select>
+      <label for="skills">기술</label>
+      <select id="skills" multiple><option>JavaScript</option><option>CSS</option><option>HTML</option></select>
+      <label for="secret">비밀번호</label><input id="secret" type="password">
+      <input id="tracking" type="hidden" value="숨은값"><input type="submit" value="전송">
+      <table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody><tr><td>담당자</td><td><input aria-label="담당" type="text"></td></tr></tbody></table>
+      <div role="checkbox" aria-checked="true">맞춤 알림</div>
+    </form>
+  </main>
+</body>
+</html>
